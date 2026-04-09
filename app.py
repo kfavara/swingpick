@@ -14,6 +14,18 @@ import requests
 # Load environment variables
 load_dotenv()
 
+# Support both local .env and Streamlit Cloud secrets
+def get_secret(key, default=None):
+    """Get secret from Streamlit secrets or environment."""
+    try:
+        from streamlit import secrets
+        if key in secrets:
+            return secrets[key]
+    except:
+        pass
+    return os.getenv(key, default)
+
+
 # History file
 HISTORY_FILE = os.path.join(os.path.dirname(__file__), 'trade_history.csv')
 
@@ -381,16 +393,6 @@ st.set_page_config(
 # ============================================================
 # AUTHENTICATION & CONFIG
 # ============================================================
-# Support both local .env and Streamlit Cloud secrets
-def get_secret(key, default=None):
-    """Get secret from Streamlit secrets or environment."""
-    try:
-        from streamlit import secrets
-        if key in secrets:
-            return secrets[key]
-    except:
-        pass
-    return os.getenv(key, default)
 
 # API Keys - support both local dev and Streamlit Cloud
 ALPACA_API_KEY = get_secret('APCA_API_KEY_ID') or os.getenv('APCA_API_KEY_ID')
