@@ -125,8 +125,9 @@ def fetch_alpaca_history(start_date=None):
     
     return history
 
+# Alpaca URLs - use secrets in production
 ALPACA_DATA_URL = 'https://data.alpaca.markets'
-ALPACA_TRADING_URL = 'https://paper-api.alpaca.markets'  # Paper trading
+ALPACA_TRADING_URL = get_secret('APCA_API_BASE_URL', 'https://paper-api.alpaca.markets')
 
 # Track which data source is being used
 _data_source = 'unknown'
