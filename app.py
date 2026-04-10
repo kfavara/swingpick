@@ -950,15 +950,11 @@ def main():
         # Get open P&L from current positions
         alpaca_positions = get_alpaca_positions()
         if alpaca_positions:
-            st.error('STARTING POSITION LOOP')
             for pos in alpaca_positions:
                 try:
                     ticker = pos.get('symbol', '')
-                    st.error(f'IN LOOP: ticker={ticker}')
-                    st.error(f'Processing: {ticker}')
                     avg_cost = float(pos.get('avg_entry_price', 0))
                     current_price = get_yfinance_price(ticker)
-                    st.error(f'DEBUG: ticker={ticker}, current_price={current_price}, qty={pos.get("qty")}')
                     if not current_price:
                         # Fallback to Alpaca's current_price
                         alpaca_price = pos.get('current_price')
@@ -1038,7 +1034,6 @@ def main():
                 try:
                     # Get current price from Yahoo Finance (real-time during market hours)
                     ticker = pos.get('symbol', '')
-                    st.error(f'IN LOOP: ticker={ticker}')
                     current_price = get_yfinance_price(ticker)
                     # Fallback to Alpaca price if Yahoo fails
                     if not current_price:
@@ -1125,11 +1120,8 @@ def main():
     
     # ===== MY POSITIONS (ALPACA ONLY) =====
     # Display positions from Alpaca directly
-    st.error(f'DEBUG: ALPACA_API_KEY set={bool(ALPACA_API_KEY)}, ALPACA_SECRET_KEY set={bool(ALPACA_SECRET_KEY)}')
     if ALPACA_API_KEY and ALPACA_SECRET_KEY:
-        st.error(f'DEBUG: Calling get_alpaca_positions()...')
         alpaca_positions = get_alpaca_positions()
-        st.error(f'DEBUG: Got {len(alpaca_positions)} positions')
         if alpaca_positions:
             st.markdown('<p class="section-header">💼 My Positions</p>', unsafe_allow_html=True)
             account_info = get_alpaca_account()
@@ -1141,15 +1133,11 @@ def main():
                 except:
                     pass
             
-            st.error('STARTING POSITION LOOP')
             for pos in alpaca_positions:
                 try:
                     ticker = pos.get('symbol', '')
-                    st.error(f'IN LOOP: ticker={ticker}')
-                    st.error(f'Processing: {ticker}')
                     avg_cost = float(pos.get('avg_entry_price', 0))
                     current_price = get_yfinance_price(ticker)
-                    st.error(f'DEBUG: ticker={ticker}, current_price={current_price}, qty={pos.get("qty")}')
                     if not current_price:
                         # Fallback to Alpaca's current_price
                         alpaca_price = pos.get('current_price')
@@ -1160,21 +1148,13 @@ def main():
                                 pass
                     qty = float(pos.get('qty', 0))
                     
-                    st.error(f'CHECK: ticker={ticker}, current_price={current_price}, avg_cost={avg_cost}, qty={qty}')
-                    if not (ticker and current_price and current_price > 0):
-                        st.error(f'SKIP: condition failed')
-                    else:
-                        st.error('Condition PASSED')
-                    st.error('ABOUT TO CHECK ticker and current_price condition')
                     if ticker and current_price and current_price > 0:
-                        st.error('INSIDE BLOCK - condition was TRUE')
                         pnl = (current_price - avg_cost) * qty
                         pnl_pct = (current_price - avg_cost) / avg_cost * 100 if avg_cost else 0
                         pnl_color = "#3fb950" if pnl >= 0 else "#f85149"
                         
                         # Get sell signals
                         sell_signals = analyze_sell_signals(ticker, avg_cost)
-                        st.error(f'DEBUG: sell_signals={sell_signals is not None}, keys={list(sell_signals.keys()) if sell_signals else None}')
                         if sell_signals:
                             take_profit = sell_signals.get('take_profit_signals', [])
                             stop_loss = sell_signals.get('stop_loss_signals', [])
@@ -1190,11 +1170,6 @@ def main():
                                 signal_type = "➡️ HOLD"
                             
                             with st.container():
-                                st.success(f'✅ DISPLAYING {ticker} NOW - PNL: ${pnl}')
-                                # Force display
-                                st.write('---POSITION START---')
-                                st.write(f'TICKER: {ticker}, QTY: {qty}, AVG: ${avg_cost}, CURRENT: ${current_price}, PNL: ${pnl}')
-                                st.write('---POSITION END---') 
                                 st.markdown(f"""
                                 <div class="pick-row" style="border-left: 4px solid {pnl_color};">
                                     <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -1216,27 +1191,6 @@ def main():
                                 </div>
                                 """, unsafe_allow_html=True)
                                 
-                                # Also show as native Streamlit components
-                                # Simple array that will definitely display
-                                st.write(["AMAT" if ticker=="AMAT" else "COHR" if ticker=="COHR" else "GEV", float(current_price), float(qty), float(pnl)])
-                                st.text(f"TICKER={ticker} PRICE={current_price} QTY={qty} PNL={pnl}")
-                                import json
-                                st.json({"ticker": ticker, "price": current_price, "qty": qty, "pnl": pnl})
-                                
-                                # Add to a session state list for display
-                                if 'display_positions' not in st.session_state:
-                                    st.session_state.display_positions = []
-                                # Store for later display
-                                if 'display_positions' not in st.session_state:
-                                    st.session_state.display_positions = []
-                                st.error(f'ADDING: {ticker} to display_positions')
-                                st.session_state.display_positions.append({
-                                    "Ticker": ticker,
-                                    "Price": f"${current_price:.2f}",
-                                    "Qty": f"{qty:.0f}",
-                                    "PnL": f"${pnl:+.2f}"
-                                })
-                                
                                 if take_profit:
                                     st.markdown(f"<div style='color:#3fb950;margin-top:5px;'>✅ {'<br>'.join(take_profit)}</div>", unsafe_allow_html=True)
                                 if stop_loss:
@@ -1255,22 +1209,9 @@ def main():
                                 
                                 st.markdown("<br>", unsafe_allow_html=True)
                 except Exception as e:
-                    st.error(f'EXCEPTION: {e}')
-        
-        # Display all positions at the end - OUTSIDE the loop
-        st.error(f'DEBUG: display_positions exists = {"display_positions" in st.session_state}')
-        if 'display_positions' in st.session_state:
-            st.error(f'DEBUG: display_positions = {st.session_state.display_positions}')
-        if 'display_positions' in st.session_state and st.session_state.display_positions:
-            import pandas as pd
-            st.subheader("📊 Position Summary")
-            st.table(pd.DataFrame(st.session_state.display_positions))
-            # Clear for next refresh
-            st.session_state.display_positions = []
+                    print(f"Error displaying {pos.get('symbol')}: {e}")
         else:
-            st.error('DEBUG: No positions to display - this should show positions above')
-            # Show data directly
-            st.error(f'DEBUG: We got {len(alpaca_positions)} positions from API')
+            st.info("No open positions in Alpaca")
     else:
         st.warning("Alpaca not configured")
     
