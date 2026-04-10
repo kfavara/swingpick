@@ -914,7 +914,8 @@ def scan_stocks(tickers):
             # Note: Progress tracking done in caller
             
         except Exception as e:
-            st.write(f"ERROR {ticker}: {e}")  # Debug
+            import traceback
+            st.error(f"ERROR {ticker}: {e} - {traceback.format_exc()}")
     
     # Sort by score descending
     results.sort(key=lambda x: x['score'], reverse=True)
@@ -1231,7 +1232,7 @@ def main():
     # Run scan
     if scan_button:
         try:
-            with st.spinner("Scanning S&P 500 stocks..."):
+            progress_bar = st.progress(0)
                 tickers = get_sp500_tickers(250)
                 st.write(f"Scanning {len(tickers)} tickers: {tickers[:5]}")  # Debug
                 results = scan_stocks(tickers)
