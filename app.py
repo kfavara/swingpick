@@ -924,7 +924,9 @@ def scan_stocks(tickers):
     
     # Sort by score descending (include all, even zero scores for debug)
     results.sort(key=lambda x: x.get('score', 0), reverse=True)
-    st.write(f"DEBUG: scan_stocks returning {len(results)} results: {[r.get('ticker') for r in results[:10]]}")  # Debug
+    st.write("DEBUG: scan_stocks returning " + str(len(results)) + " results")
+    if results:
+        st.write("First result: " + str(results[0]))
     return results[:50]  # Return more
 
 
