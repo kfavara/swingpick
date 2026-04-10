@@ -1153,8 +1153,12 @@ def main():
                         pnl_pct = (current_price - avg_cost) / avg_cost * 100 if avg_cost else 0
                         pnl_color = "#3fb950" if pnl >= 0 else "#f85149"
                         
-                        # Get sell signals
-                        sell_signals = analyze_sell_signals(ticker, avg_cost)
+                        # Try to get signals, but continue even if it fails
+                        try:
+                            sell_signals = analyze_sell_signals(ticker, avg_cost)
+                        except Exception as sig_err:
+                            st.warning(f"Could not get signals: {sig_err}")
+                            sell_signals = None
                         if sell_signals:
                             take_profit = sell_signals.get('take_profit_signals', [])
                             stop_loss = sell_signals.get('stop_loss_signals', [])
