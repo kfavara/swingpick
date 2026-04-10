@@ -1169,45 +1169,38 @@ def main():
                                 signal_color = "#8b949e"
                                 signal_type = "➡️ HOLD"
                             
-                            with st.container():
-                                st.markdown(f"""
-                                <div class="pick-row" style="border-left: 4px solid {pnl_color};">
-                                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                                        <div>
-                                            <span style="font-size:1.2rem;font-weight:700;color:#ffffff;">{ticker}</span>
-                                            <span style="color:#8b949e;margin-left:10px;">Avg: ${avg_cost:.2f}</span>
-                                            <span style="color:#8b949e;margin-left:10px;">Now: ${current_price:.2f}</span>
-                                            <span style="color:#8b949e;margin-left:10px;">Qty: {qty:.0f}</span>
-                                        </div>
-                                        <div style="text-align:right;">
-                                            <span style="font-size:1.1rem;font-weight:600;color:{pnl_color};">{pnl_pct:+.2f}% (${pnl:+,.2f})</span>
-                                        </div>
-                                    </div>
-                                    <div style="margin-top:8px;display:flex;gap:20px;flex-wrap:wrap;">
-                                        <div><span style="color:#8b949e;">Signal:</span> <span style="color:{signal_color};font-weight:600;">{signal_type}</span></div>
-                                        <div><span style="color:#8b949e;">RSI:</span> <span style="color:#ffffff;">{sell_signals.get('rsi', 'N/A'):.1f}</span></div>
-                                        <div><span style="color:#8b949e;">Today:</span> <span style="color:#ffffff;">{sell_signals.get('change_1d', 0):+.2f}%</span></div>
-                                    </div>
-                                </div>
-                                """, unsafe_allow_html=True)
-                                
-                                if take_profit:
-                                    st.markdown(f"<div style='color:#3fb950;margin-top:5px;'>✅ {'<br>'.join(take_profit)}</div>", unsafe_allow_html=True)
-                                if stop_loss:
-                                    st.markdown(f"<div style='color:#f85149;margin-top:5px;'>🛑 {'<br>'.join(stop_loss)}</div>", unsafe_allow_html=True)
-                                if not take_profit and not stop_loss:
-                                    st.caption("No strong signals - consider holding")
-                                
-                                # Sell via Alpaca only
-                                if st.button(f"🔴 Sell {ticker}", key=f"sell_alpaca_{ticker}"):
-                                    order = place_alpaca_order(ticker, int(qty), 'sell', 'market')
-                                    if 'error' in order:
-                                        st.error(f"Order failed: {order['error']}")
-                                    else:
-                                        st.success(f"✅ Sell order placed: {int(qty)} share(s) of {ticker}")
-                                        st.rerun()
-                                
-                                st.markdown("<br>", unsafe_allow_html=True)
+                            # Native Streamlit display (same as HTML above)
+                            st.subheader(f"{ticker}")
+                            c1, c2, c3, c4 = st.columns(4)
+                            c1.metric("Avg Cost", f"${avg_cost:.2f}")
+                            c2.metric("Current", f"${current_price:.2f}")
+                            c3.metric("Qty", f"{qty:.0f}")
+                            c4.metric("P&L", f"${pnl:+.2f}", f"{pnl_pct:+.2f}%")
+                            
+                            rsi_val = sell_signals.get('rsi', 0) if sell_signals else 0
+                            change_val = sell_signals.get('change_1d', 0) if sell_signals else 0
+                            info_c1, info_c2, info_c3 = st.columns(3)
+                            info_c1.write(f"**Signal:** {signal_type}")
+                            info_c2.write(f"**RSI:** {rsi_val:.1f}" if rsi_val else "**RSI:** N/A")
+                            info_c3.write(f"**Today:** {change_val:+.2f}%" if change_val else "**Today:** N/A")
+                            
+                            if take_profit:
+                                st.success(f"✅ {'; '.join(take_profit)}")
+                            elif stop_loss:
+                                st.error(f"🛑 {'; '.join(stop_loss)}")
+                            else:
+                                st.caption("No strong signals - consider holding")
+                            
+                            # Sell button
+                            if st.button(f"🔴 Sell {ticker}", key=f"sell_{ticker}"):
+                                order = place_alpaca_order(ticker, int(qty), 'sell', 'market')
+                                if 'error' in order:
+                                    st.error(f"Order failed: {order['error']}")
+                                else:
+                                    st.success(f"✅ Sell order placed: {int(qty)} share(s) of {ticker}")
+                                    st.rerun()
+                            
+                            st.divider()
                 except Exception as e:
                     print(f"Error displaying {pos.get('symbol')}: {e}")
         else:
