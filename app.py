@@ -956,6 +956,7 @@ def main():
                     st.error(f'Processing: {ticker}')
                     avg_cost = float(pos.get('avg_entry_price', 0))
                     current_price = get_yfinance_price(ticker)
+                    st.error(f'DEBUG: ticker={ticker}, current_price={current_price}, qty={pos.get("qty")}')
                     if not current_price:
                         # Fallback to Alpaca's current_price
                         alpaca_price = pos.get('current_price')
@@ -1143,6 +1144,7 @@ def main():
                     st.error(f'Processing: {ticker}')
                     avg_cost = float(pos.get('avg_entry_price', 0))
                     current_price = get_yfinance_price(ticker)
+                    st.error(f'DEBUG: ticker={ticker}, current_price={current_price}, qty={pos.get("qty")}')
                     if not current_price:
                         # Fallback to Alpaca's current_price
                         alpaca_price = pos.get('current_price')
@@ -1153,6 +1155,7 @@ def main():
                                 pass
                     qty = float(pos.get('qty', 0))
                     
+                    st.error(f'CHECK: ticker={ticker}, current_price={current_price}, avg_cost={avg_cost}, qty={qty}')
                     if ticker and current_price and current_price > 0:
                         pnl = (current_price - avg_cost) * qty
                         pnl_pct = (current_price - avg_cost) / avg_cost * 100 if avg_cost else 0
