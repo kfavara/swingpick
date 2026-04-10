@@ -1120,8 +1120,11 @@ def main():
     
     # ===== MY POSITIONS (ALPACA ONLY) =====
     # Display positions from Alpaca directly
+    st.error(f'DEBUG: ALPACA_API_KEY set={bool(ALPACA_API_KEY)}, ALPACA_SECRET_KEY set={bool(ALPACA_SECRET_KEY)}')
     if ALPACA_API_KEY and ALPACA_SECRET_KEY:
+        st.error(f'DEBUG: Calling get_alpaca_positions()...')
         alpaca_positions = get_alpaca_positions()
+        st.error(f'DEBUG: Got {len(alpaca_positions)} positions')
         if alpaca_positions:
             st.markdown('<p class="section-header">💼 My Positions</p>', unsafe_allow_html=True)
             account_info = get_alpaca_account()
