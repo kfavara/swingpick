@@ -953,6 +953,7 @@ def main():
             for pos in alpaca_positions:
                 try:
                     ticker = pos.get('symbol', '')
+                    st.error(f'Processing: {ticker}')
                     avg_cost = float(pos.get('avg_entry_price', 0))
                     current_price = get_yfinance_price(ticker)
                     if not current_price:
@@ -1139,6 +1140,7 @@ def main():
             for pos in alpaca_positions:
                 try:
                     ticker = pos.get('symbol', '')
+                    st.error(f'Processing: {ticker}')
                     avg_cost = float(pos.get('avg_entry_price', 0))
                     current_price = get_yfinance_price(ticker)
                     if not current_price:
