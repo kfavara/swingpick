@@ -1220,6 +1220,21 @@ def main():
                                 st.text(f"TICKER={ticker} PRICE={current_price} QTY={qty} PNL={pnl}")
                                 import json
                                 st.json({"ticker": ticker, "price": current_price, "qty": qty, "pnl": pnl})
+                                
+                                # Add to a session state list for display
+                                if 'display_positions' not in st.session_state:
+                                    st.session_state.display_positions = []
+                                st.session_state.display_positions.append({
+                                    "Ticker": ticker,
+                                    "Price": current_price,
+                                    "Qty": qty,
+                                    "PnL": pnl
+                                })
+        
+        # Display all positions at the end
+        if 'display_positions' in st.session_state and st.session_state.display_positions:
+            import pandas as pd
+            st.table(pd.DataFrame(st.session_state.display_positions))
                                 if take_profit:
                                     st.markdown(f"<div style='color:#3fb950;margin-top:5px;'>✅ {'<br>'.join(take_profit)}</div>", unsafe_allow_html=True)
                                 if stop_loss:
