@@ -919,7 +919,7 @@ def scan_stocks(tickers):
             # Note: Progress tracking done in caller
             
         except Exception as e:
-            continue  # Skip problematic tickers
+            st.write(f"ERROR {ticker}: {e}")  # Debug
     
     # Sort by score descending
     results.sort(key=lambda x: x['score'], reverse=True)
