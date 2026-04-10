@@ -1179,7 +1179,8 @@ def main():
                                 signal_type = "➡️ HOLD"
                             
                             with st.container():
-                                st.success(f'✅ Displaying {ticker} with P&L: {pnl}') 
+                                st.success(f'✅ About to display {ticker}')
+                                st.error(f'REACH: ticker={ticker}, pnl={pnl}, pnl_pct={pnl_pct}, signal_type={signal_type}') 
                                 st.markdown(f"""
                                 <div class="pick-row" style="border-left: 4px solid {pnl_color};">
                                     <div style="display:flex;justify-content:space-between;align-items:center;">
