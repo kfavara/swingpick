@@ -886,7 +886,8 @@ def scan_stocks(tickers):
     print(f"[DEBUG] Scanning {total} tickers: {tickers[:5]}")
     
     # Get market performance for relative strength comparison
-    market_perf = get_market_performance()
+    # DEBUG - use non-zero dummy to test
+    market_perf = {'change_5d': 3.0, 'change_20d': 2.0, 'change_3mo': 5.0, 'price': 500.0}
     
     # Debug: print market performance
     st.write(f"DEBUG market_perf: {market_perf}")
