@@ -1159,52 +1159,41 @@ def main():
                         except Exception as sig_err:
                             st.warning(f"Could not get signals: {sig_err}")
                             sell_signals = None
+                        # Always display this position
+                        st.subheader(f"{ticker}")
+                        c1, c2, c3, c4 = st.columns(4)
+                        c1.metric("Avg Cost", f"${avg_cost:.2f}")
+                        c2.metric("Current", f"${current_price:.2f}")
+                        c3.metric("Qty", f"{qty:.0f}")
+                        c4.metric("P&L", f"${pnl:+.2f}", f"{pnl_pct:+.2f}%")
+                        
+                        # Show signals if available
                         if sell_signals:
+                            rsi_val = sell_signals.get('rsi')
+                            change_val = sell_signals.get('change_1d')
+                            if rsi_val:
+                                st.write(f"RSI: {rsi_val:.1f} | Today: {change_val:+.2f}%" if change_val else f"RSI: {rsi_val:.1f}")
+                            
                             take_profit = sell_signals.get('take_profit_signals', [])
                             stop_loss = sell_signals.get('stop_loss_signals', [])
-                            
-                            if take_profit:
-                                signal_color = "#3fb950"
-                                signal_type = "✅ TAKE PROFIT"
-                            elif stop_loss:
-                                signal_color = "#f85149"
-                                signal_type = "🛑 STOP LOSS"
-                            else:
-                                signal_color = "#8b949e"
-                                signal_type = "➡️ HOLD"
-                            
-                            # Native Streamlit display (same as HTML above)
-                            st.subheader(f"{ticker}")
-                            c1, c2, c3, c4 = st.columns(4)
-                            c1.metric("Avg Cost", f"${avg_cost:.2f}")
-                            c2.metric("Current", f"${current_price:.2f}")
-                            c3.metric("Qty", f"{qty:.0f}")
-                            c4.metric("P&L", f"${pnl:+.2f}", f"{pnl_pct:+.2f}%")
-                            
-                            rsi_val = sell_signals.get('rsi', 0) if sell_signals else 0
-                            change_val = sell_signals.get('change_1d', 0) if sell_signals else 0
-                            info_c1, info_c2, info_c3 = st.columns(3)
-                            info_c1.write(f"**Signal:** {signal_type}")
-                            info_c2.write(f"**RSI:** {rsi_val:.1f}" if rsi_val else "**RSI:** N/A")
-                            info_c3.write(f"**Today:** {change_val:+.2f}%" if change_val else "**Today:** N/A")
                             
                             if take_profit:
                                 st.success(f"✅ {'; '.join(take_profit)}")
                             elif stop_loss:
                                 st.error(f"🛑 {'; '.join(stop_loss)}")
                             else:
-                                st.caption("No strong signals - consider holding")
-                            
-                            # Sell button
-                            if st.button(f"🔴 Sell {ticker}", key=f"sell_{ticker}"):
-                                order = place_alpaca_order(ticker, int(qty), 'sell', 'market')
-                                if 'error' in order:
-                                    st.error(f"Order failed: {order['error']}")
-                                else:
-                                    st.success(f"✅ Sell order placed: {int(qty)} share(s) of {ticker}")
-                                    st.rerun()
-                            
-                            st.divider()
+                                st.info("➡️ HOLD")
+                        
+                        # Sell button
+                        if st.button(f"🔴 Sell {ticker}", key=f"sell_{ticker}"):
+                            order = place_alpaca_order(ticker, int(qty), 'sell', 'market')
+                            if 'error' in order:
+                                st.error(f"Order failed: {order['error']}")
+                            else:
+                                st.success(f"✅ Sell order placed: {int(qty)} share(s) of {ticker}")
+                                st.rerun()
+                        
+                        st.divider()
                 except Exception as e:
                     print(f"Error displaying {pos.get('symbol')}: {e}")
         else:
@@ -1311,4 +1300,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-# Debug
