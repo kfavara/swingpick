@@ -1212,6 +1212,10 @@ def main():
                     print(f"Error displaying {pos.get('symbol')}: {e}")
         else:
             st.info("No open positions in Alpaca")
+        
+        # Force fresh display - if we got here, show something
+        if alpaca_positions:
+            st.success(f"✅ Displayed {len(alpaca_positions)} positions above")
     else:
         st.warning("Alpaca not configured")
     
