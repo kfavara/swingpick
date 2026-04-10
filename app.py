@@ -1224,17 +1224,16 @@ def main():
                                 # Add to a session state list for display
                                 if 'display_positions' not in st.session_state:
                                     st.session_state.display_positions = []
+                                # Store for later display
+                                if 'display_positions' not in st.session_state:
+                                    st.session_state.display_positions = []
                                 st.session_state.display_positions.append({
                                     "Ticker": ticker,
-                                    "Price": current_price,
-                                    "Qty": qty,
-                                    "PnL": pnl
+                                    "Price": f"${current_price:.2f}",
+                                    "Qty": f"{qty:.0f}",
+                                    "PnL": f"${pnl:+.2f}"
                                 })
-        
-        # Display all positions at the end
-        if 'display_positions' in st.session_state and st.session_state.display_positions:
-            import pandas as pd
-            st.table(pd.DataFrame(st.session_state.display_positions))
+                                
                                 if take_profit:
                                     st.markdown(f"<div style='color:#3fb950;margin-top:5px;'>✅ {'<br>'.join(take_profit)}</div>", unsafe_allow_html=True)
                                 if stop_loss:
@@ -1254,6 +1253,14 @@ def main():
                                 st.markdown("<br>", unsafe_allow_html=True)
                 except Exception as e:
                     st.error(f'EXCEPTION: {e}')
+        
+        # Display all positions at the end - OUTSIDE the loop
+        if 'display_positions' in st.session_state and st.session_state.display_positions:
+            import pandas as pd
+            st.subheader("📊 Position Summary")
+            st.table(pd.DataFrame(st.session_state.display_positions))
+            # Clear for next refresh
+            st.session_state.display_positions = []
         else:
             st.info("No open positions in Alpaca")
     else:
