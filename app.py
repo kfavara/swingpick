@@ -1246,45 +1246,26 @@ def main():
         st.markdown('<p class="section-header">📊 Today\'s Top Picks</p>', unsafe_allow_html=True)
         
         for i, pick in enumerate(results, 1):
-            # Color coding based on score
-            score_color = "#3fb950" if pick['score'] >= 70 else "#58a6ff" if pick['score'] >= 60 else "#8b949e"
-            signal_class = "signal-bull" if pick['change_1d'] > 0 else "signal-bear"
-            
-            # Minervini-specific metrics
-            pct_from_high = pick.get('pct_from_52wk_high', 0)
-            rs_3mo = pick.get('rs_3mo', 0)
-            
-            with st.container():
-                st.markdown(f"""
-                <div class="pick-row">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div>
-                            <span style="font-size:1.4rem;font-weight:700;color:#ffffff;">{i}. {pick['ticker']}</span>
-                            <span style="color:#8b949e;margin-left:10px;">${pick['price']:.2f}</span>
-                            <span class="{signal_class}">
-                                {pick['change_1d']:+.2f}% today
-                            </span>
-                        </div>
-                        <div style="text-align:right;">
-                            <span style="font-size:1.2rem;font-weight:600;color:{score_color};">Score: {pick['score']}</span>
-                        </div>
-                    </div>
-                    <div style="margin-top:10px;display:flex;gap:20px;flex-wrap:wrap;">
-                        <div><span style="color:#8b949e;">Stop:</span> <span style="color:#f85149;">${pick['stop_loss']:.2f}</span></div>
-                        <div><span style="color:#8b949e;">Target:</span> <span style="color:#3fb950;">${pick['target']:.2f}</span></div>
-                        <div><span style="color:#8b949e;">Risk:Reward:</span> <span style="color:#ffffff;">1:{(pick['target']-pick['price'])/(pick['price']-pick['stop_loss']):.1f}</span></div>
-                        <div><span style="color:#8b949e;">52W High:</span> <span style="color:#ffffff;">{pct_from_high:.1f}%</span></div>
-                        <div><span style="color:#8b949e;">RS vs Mkt:</span> <span style="color:#{'#3fb950' if rs_3mo > 0 else '#f85149'};">{rs_3mo:+.1f}%</span></div>
-                        <div><span style="color:#8b949e;">RSI:</span> <span style="color:#ffffff;">{pick.get('rsi', 'N/A')}</span></div>\n                    </div>
-                    <div style="margin-top:8px;">
-                        <span style="color:#8b949e;">Why: </span>
-                        <span style="color:#58a6ff;">{", ".join(pick['reasons'][:4])}</span>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                st.markdown("<br>", unsafe_allow_html=True)
-    
+            score = pick.get("score", 0)
+            ticker = pick["ticker"]
+            price = pick["price"]
+            change = pick["change_1d"]
+            st.subheader("{}. {} - ${:.2f} ({:+.2f}%)".format(i, ticker, price, change))
+            m1, m2, m3, m4, m5, m6 = st.columns(6)
+            m1.metric("Score", str(score))
+            m2.metric("Stop", "${:.2f}".format(pick["stop_loss"]))
+            m3.metric("Target", "${:.2f}".format(pick["target"]))
+            rr = 0
+            if pick.get("stop_loss"):
+                rr = (pick["target"]-pick["price"])/(pick["price"]-pick["stop_loss"])
+            m4.metric("R:R", "1:{:.1f}".format(rr))
+            m5.metric("52W High", "{:.1f}%".format(pick.get("pct_from_52wk_high", 0)))
+            m6.metric("RSI", str(pick.get("rsi", "N/A")))
+            reasons = pick.get("reasons", [])
+            if reasons:
+                st.write("**Why:** " + ", ".join(reasons[:4]))
+            st.divider()
+
     elif st.session_state.last_scan is None:
         st.info("👆 Click 'Scan Market' to analyze S&P 500 stocks and find swing trade opportunities.")
     
