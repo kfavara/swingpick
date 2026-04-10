@@ -1227,6 +1227,7 @@ def main():
                                 # Store for later display
                                 if 'display_positions' not in st.session_state:
                                     st.session_state.display_positions = []
+                                st.error(f'ADDING: {ticker} to display_positions')
                                 st.session_state.display_positions.append({
                                     "Ticker": ticker,
                                     "Price": f"${current_price:.2f}",
