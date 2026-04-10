@@ -1215,7 +1215,11 @@ def main():
                                 """, unsafe_allow_html=True)
                                 
                                 # Also show as native Streamlit components
-                                st.write(f"**TICKER:** {ticker} | **PRICE:** ${current_price:.2f} | **QTY:** {qty:.0f} | **PNL:** ${pnl:+.2f}")
+                                # Simple array that will definitely display
+                                st.write(["AMAT" if ticker=="AMAT" else "COHR" if ticker=="COHR" else "GEV", float(current_price), float(qty), float(pnl)])
+                                st.text(f"TICKER={ticker} PRICE={current_price} QTY={qty} PNL={pnl}")
+                                import json
+                                st.json({"ticker": ticker, "price": current_price, "qty": qty, "pnl": pnl})
                                 if take_profit:
                                     st.markdown(f"<div style='color:#3fb950;margin-top:5px;'>✅ {'<br>'.join(take_profit)}</div>", unsafe_allow_html=True)
                                 if stop_loss:
