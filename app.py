@@ -950,8 +950,10 @@ def main():
         # Get open P&L from current positions
         alpaca_positions = get_alpaca_positions()
         if alpaca_positions:
+            st.error('STARTING POSITION LOOP')
             for pos in alpaca_positions:
                 try:
+                    st.error(f'IN LOOP: {pos}')
                     ticker = pos.get('symbol', '')
                     st.error(f'Processing: {ticker}')
                     avg_cost = float(pos.get('avg_entry_price', 0))
@@ -1138,8 +1140,10 @@ def main():
                 except:
                     pass
             
+            st.error('STARTING POSITION LOOP')
             for pos in alpaca_positions:
                 try:
+                    st.error(f'IN LOOP: {pos}')
                     ticker = pos.get('symbol', '')
                     st.error(f'Processing: {ticker}')
                     avg_cost = float(pos.get('avg_entry_price', 0))
