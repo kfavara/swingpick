@@ -1248,8 +1248,8 @@ def main():
         st.write(f"DEBUG: Got {len(tickers)} tickers")
         results = scan_stocks(tickers)
         st.write(f"DEBUG: Got {len(results)} results")
-            st.session_state.results = results
-            st.session_state.last_scan = datetime.now()
+        st.session_state.results = results
+        st.session_state.last_scan = datetime.now()
         
         if last_scan_date != today:  # Only show success if auto-scanned
             st.success(f"Found {len(results)} potential swing trades!")
