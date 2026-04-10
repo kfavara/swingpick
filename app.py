@@ -913,7 +913,10 @@ def scan_stocks(tickers):
                 st.write(f"❌ {ticker}: score={score}, price={indicators.get('price')}, vol={indicators.get('volume')}")  # Debug
             
             if pick:
+                st.write(f"DEBUG adding {ticker} to results")  # Debug
                 results.append(pick)
+            else:
+                st.write(f"DEBUG {ticker} score={score} - no pick")  # Debug
             
             # Update progress
             # Note: Progress tracking done in caller
