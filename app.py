@@ -1215,6 +1215,17 @@ def main():
         
         # Force fresh display - if we got here, show something
         if alpaca_positions:
+            # Force display using native Streamlit dataeditor/dataframe
+            import pandas as pd
+            display_data = []
+            for p in alpaca_positions:
+                display_data.append({
+                    "Ticker": p.get("symbol"),
+                    "Qty": p.get("qty"),
+                    "Avg Cost": p.get("avg_entry_price"),
+                    "Current": p.get("current_price")
+                })
+            st.dataframe(pd.DataFrame(display_data), use_container_width=True)
             st.success(f"✅ Displayed {len(alpaca_positions)} positions above")
     else:
         st.warning("Alpaca not configured")
