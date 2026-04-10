@@ -735,7 +735,7 @@ def score_stock(indicators, ticker, market_perf=None):
         reasons.append("Price acceleration")
     
     # Calculate suggested trade parameters (Minervini-style)
-    if score >= 30:
+    if score >= 0:
         # Stop loss at 7-8% below entry (classic Minervini)
         stop_loss = price * 0.92  # 8% stop
         target = price * 1.25  # 25% target (3:1 reward:risk)
@@ -922,9 +922,9 @@ def scan_stocks(tickers):
             import traceback
             st.error(f"ERROR {ticker}: {e} - {traceback.format_exc()}")
     
-    # Sort by score descending
-    results.sort(key=lambda x: x['score'], reverse=True)
-    return results[:15]  # Return top 15
+    # Sort by score descending (include all, even zero scores for debug)
+    results.sort(key=lambda x: x.get('score', 0), reverse=True)
+    return results[:50]  # Return more
 
 
 def main():
