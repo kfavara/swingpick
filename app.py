@@ -953,7 +953,12 @@ def main():
             st.error('STARTING POSITION LOOP')
             for pos in alpaca_positions:
                 try:
-                    st.error(f'IN LOOP: {pos}')
+                    st.error(f'IN LOOP: ticker={ticker}, avg_cost={avg_cost}, current_price={current_price}')
+                    
+                    if not (ticker and current_price and current_price > 0):
+                        st.error(f'SKIP: condition failed - ticker={bool(ticker)}, current_price={bool(current_price)}, current_price>0={current_price>0 if current_price else False}')
+                    else:
+                        st.error('Condition PASSED - about to display')
                     ticker = pos.get('symbol', '')
                     st.error(f'Processing: {ticker}')
                     avg_cost = float(pos.get('avg_entry_price', 0))
@@ -1143,7 +1148,12 @@ def main():
             st.error('STARTING POSITION LOOP')
             for pos in alpaca_positions:
                 try:
-                    st.error(f'IN LOOP: {pos}')
+                    st.error(f'IN LOOP: ticker={ticker}, avg_cost={avg_cost}, current_price={current_price}')
+                    
+                    if not (ticker and current_price and current_price > 0):
+                        st.error(f'SKIP: condition failed - ticker={bool(ticker)}, current_price={bool(current_price)}, current_price>0={current_price>0 if current_price else False}')
+                    else:
+                        st.error('Condition PASSED - about to display')
                     ticker = pos.get('symbol', '')
                     st.error(f'Processing: {ticker}')
                     avg_cost = float(pos.get('avg_entry_price', 0))
