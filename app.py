@@ -877,6 +877,7 @@ def scan_stocks(tickers):
     _data_source = 'unknown'
     results = []
     total = len(tickers)
+    st.write(f"DEBUG: scan_stocks called with {len(tickers)} tickers")
     
     # Debug - show tickers list
     print(f"[DEBUG] Scanning {total} tickers: {tickers[:5]}")
