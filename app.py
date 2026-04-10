@@ -901,6 +901,7 @@ def scan_stocks(tickers):
             df = get_stock_bars(ticker)
             
             if df is None or df.empty:
+                print(f"[DEBUG] {ticker}: no data")  # Debug
                 continue
             
             # Calculate indicators
@@ -908,6 +909,8 @@ def scan_stocks(tickers):
             
             # Score the stock with market performance
             score, pick = score_stock(indicators, ticker, market_perf)
+            
+            print(f"[DEBUG] {ticker}: score={score}, pick={'Yes' if pick else 'No'}")  # Debug
             
             if pick:
                 results.append(pick)
