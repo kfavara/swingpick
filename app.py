@@ -335,6 +335,7 @@ def get_market_performance():
     """Get SPY performance for relative strength comparison."""
     try:
         spy = get_yfinance_bars("SPY")
+        st.write(f"DEBUG SPY data: {type(spy)}, len={len(spy) if spy is not None else 'None'}")  # Debug
         if spy is not None and len(spy) >= 20:
             spy_price = spy['Close'].iloc[-1]
             spy_5d_ago = spy['Close'].iloc[-6] if len(spy) >= 6 else spy_price
