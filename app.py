@@ -1233,12 +1233,12 @@ def main():
     if scan_button:
         try:
             progress_bar = st.progress(0)
-                tickers = get_sp500_tickers(250)
-                st.write(f"Scanning {len(tickers)} tickers: {tickers[:5]}")  # Debug
-                results = scan_stocks(tickers)
-                st.write(f"Found {len(results)} results")  # Debug
-                st.session_state.results = results
-                st.session_state.last_scan = datetime.now()
+            tickers = get_sp500_tickers(250)
+            st.write(f"Scanning {len(tickers)} tickers: {tickers[:5]}")  # Debug
+            results = scan_stocks(tickers)
+            st.write(f"Found {len(results)} results")  # Debug
+            st.session_state.results = results
+            st.session_state.last_scan = datetime.now()
         except Exception as scan_err:
             st.error("Scan error: " + str(scan_err))
             print("Scan error:", scan_err)
