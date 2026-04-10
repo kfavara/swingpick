@@ -1227,6 +1227,21 @@ def main():
                 })
             st.dataframe(pd.DataFrame(display_data), use_container_width=True)
             st.success(f"✅ Displayed {len(alpaca_positions)} positions above")
+
+            # Add sell buttons
+            st.subheader("Sell Positions")
+            for p in alpaca_positions:
+                ticker = p.get("symbol", "")
+                qty = int(float(p.get("qty", 0)))
+                if qty > 0:
+                    if st.button(f"🔴 Sell {ticker}", key=f"sell_{ticker}"):
+                        order = place_alpaca_order(ticker, qty, "sell", "market")
+                        if "error" in order:
+                            err = order["error"]
+                            st.error(f"Failed: {err}")
+                        else:
+                            st.success(f"Sold {qty} shares of {ticker}")
+                            st.rerun()
     else:
         st.warning("Alpaca not configured")
     
