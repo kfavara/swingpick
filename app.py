@@ -1231,7 +1231,9 @@ def main():
         scan_button = True
     
     # Run scan
+    st.write("DEBUG: About to check scan_button")  # Debug
     if scan_button:
+        st.write("DEBUG: scan_button is True!")  # Debug
         try:
             progress_bar = st.progress(0)
             tickers = get_sp500_tickers(250)
