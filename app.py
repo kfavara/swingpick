@@ -956,7 +956,13 @@ def main():
                     avg_cost = float(pos.get('avg_entry_price', 0))
                     current_price = get_yfinance_price(ticker)
                     if not current_price:
-                        current_price = float(pos.get('current_price', 0))
+                        # Fallback to Alpaca's current_price
+                        alpaca_price = pos.get('current_price')
+                        if alpaca_price:
+                            try:
+                                current_price = float(alpaca_price)
+                            except:
+                                pass
                     qty = float(pos.get('qty', 0))
                     if ticker and current_price and avg_cost:
                         pnl = (current_price - avg_cost) * qty
@@ -1133,10 +1139,16 @@ def main():
                     avg_cost = float(pos.get('avg_entry_price', 0))
                     current_price = get_yfinance_price(ticker)
                     if not current_price:
-                        current_price = float(pos.get('current_price', 0))
+                        # Fallback to Alpaca's current_price
+                        alpaca_price = pos.get('current_price')
+                        if alpaca_price:
+                            try:
+                                current_price = float(alpaca_price)
+                            except:
+                                pass
                     qty = float(pos.get('qty', 0))
                     
-                    if ticker and current_price:
+                    if ticker and current_price and current_price > 0:
                         pnl = (current_price - avg_cost) * qty
                         pnl_pct = (current_price - avg_cost) / avg_cost * 100 if avg_cost else 0
                         pnl_color = "#3fb950" if pnl >= 0 else "#f85149"
@@ -1273,7 +1285,7 @@ def main():
                         <div><span style="color:#8b949e;">Risk:Reward:</span> <span style="color:#ffffff;">1:{(pick['target']-pick['price'])/(pick['price']-pick['stop_loss']):.1f}</span></div>
                         <div><span style="color:#8b949e;">52W High:</span> <span style="color:#ffffff;">{pct_from_high:.1f}%</span></div>
                         <div><span style="color:#8b949e;">RS vs Mkt:</span> <span style="color:#{'#3fb950' if rs_3mo > 0 else '#f85149'};">{rs_3mo:+.1f}%</span></div>
-                    </div>
+                        <div><span style="color:#8b949e;">RSI:</span> <span style="color:#ffffff;">{pick.get('rsi', 'N/A')}</span></div>\n                    </div>
                     <div style="margin-top:8px;">
                         <span style="color:#8b949e;">Why: </span>
                         <span style="color:#58a6ff;">{", ".join(pick['reasons'][:4])}</span>
