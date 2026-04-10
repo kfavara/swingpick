@@ -910,7 +910,7 @@ def scan_stocks(tickers):
             # Score the stock with market performance
             score, pick = score_stock(indicators, ticker, market_perf)
             
-            print(f"[DEBUG] {ticker}: score={score}, pick={'Yes' if pick else 'No'}")  # Debug
+            st.write(f"{ticker}: score={score}")  # Debug
             
             if pick:
                 results.append(pick)
