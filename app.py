@@ -1243,9 +1243,11 @@ def main():
     
     # Run scan
     if scan_button:
-        with st.spinner("Scanning S&P 500 stocks..."):
-            tickers = get_sp500_tickers(250)
-            results = scan_stocks(tickers)
+        st.write("DEBUG: Starting scan...")
+        tickers = get_sp500_tickers(250)
+        st.write(f"DEBUG: Got {len(tickers)} tickers")
+        results = scan_stocks(tickers)
+        st.write(f"DEBUG: Got {len(results)} results")
             st.session_state.results = results
             st.session_state.last_scan = datetime.now()
         
