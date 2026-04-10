@@ -335,7 +335,7 @@ def get_market_performance():
     """Get SPY performance for relative strength comparison."""
     try:
         spy = get_yfinance_bars("SPY")
-        st.write(f"DEBUG SPY data: {type(spy)}, len={len(spy) if spy is not None else 'None'}")  # Debug
+        print(f"DEBUG SPY data: {type(spy)}, len={len(spy) if spy is not None else 'None'}")  # Debug
         if spy is not None and len(spy) >= 20:
             spy_price = spy['Close'].iloc[-1]
             spy_5d_ago = spy['Close'].iloc[-6] if len(spy) >= 6 else spy_price
@@ -351,7 +351,7 @@ def get_market_performance():
     except Exception as e:
         st.error(f"SPY fetch error: {e}")
         pass
-    st.write("DEBUG: returning zeros for market_perf")
+    st.error("DEBUG: returning zeros for market_perf")
     return {'change_5d': 0, 'change_20d': 0, 'change_3mo': 0, 'price': 0}
 
 
