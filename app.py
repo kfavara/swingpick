@@ -1188,7 +1188,11 @@ def main():
                                 signal_type = "➡️ HOLD"
                             
                             with st.container():
-                                st.success(f'✅ DISPLAYING {ticker} NOW') 
+                                st.success(f'✅ DISPLAYING {ticker} NOW - PNL: ${pnl}')
+                                # Force display
+                                st.write('---POSITION START---')
+                                st.write(f'TICKER: {ticker}, QTY: {qty}, AVG: ${avg_cost}, CURRENT: ${current_price}, PNL: ${pnl}')
+                                st.write('---POSITION END---') 
                                 st.markdown(f"""
                                 <div class="pick-row" style="border-left: 4px solid {pnl_color};">
                                     <div style="display:flex;justify-content:space-between;align-items:center;">
