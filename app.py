@@ -1210,35 +1210,7 @@ def main():
         else:
             st.info("No open positions in Alpaca")
         
-        # Force fresh display - if we got here, show something
-        if alpaca_positions:
-            # Force display using native Streamlit dataeditor/dataframe
-            import pandas as pd
-            display_data = []
-            for p in alpaca_positions:
-                display_data.append({
-                    "Ticker": p.get("symbol"),
-                    "Qty": p.get("qty"),
-                    "Avg Cost": p.get("avg_entry_price"),
-                    "Current": p.get("current_price")
-                })
-            st.dataframe(pd.DataFrame(display_data), use_container_width=True)
-            st.success(f"✅ Displayed {len(alpaca_positions)} positions above")
 
-            # Add sell buttons
-            st.subheader("Sell Positions")
-            for p in alpaca_positions:
-                ticker = p.get("symbol", "")
-                qty = int(float(p.get("qty", 0)))
-                if qty > 0:
-                    if st.button(f"🔴 Sell {ticker}", key=f"sell_{ticker}"):
-                        order = place_alpaca_order(ticker, qty, "sell", "market")
-                        if "error" in order:
-                            err = order["error"]
-                            st.error(f"Failed: {err}")
-                        else:
-                            st.success(f"Sold {qty} shares of {ticker}")
-                            st.rerun()
     else:
         st.warning("Alpaca not configured")
     
