@@ -1255,6 +1255,9 @@ def main():
                     st.error(f'EXCEPTION: {e}')
         
         # Display all positions at the end - OUTSIDE the loop
+        st.error(f'DEBUG: display_positions exists = {"display_positions" in st.session_state}')
+        if 'display_positions' in st.session_state:
+            st.error(f'DEBUG: display_positions = {st.session_state.display_positions}')
         if 'display_positions' in st.session_state and st.session_state.display_positions:
             import pandas as pd
             st.subheader("📊 Position Summary")
@@ -1262,7 +1265,9 @@ def main():
             # Clear for next refresh
             st.session_state.display_positions = []
         else:
-            st.info("No open positions in Alpaca")
+            st.error('DEBUG: No positions to display - this should show positions above')
+            # Show data directly
+            st.error(f'DEBUG: We got {len(alpaca_positions)} positions from API')
     else:
         st.warning("Alpaca not configured")
     
