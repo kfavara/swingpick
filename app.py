@@ -348,8 +348,10 @@ def get_market_performance():
                 'change_3mo': ((spy_price - spy_63d_ago) / spy_63d_ago) * 100,
                 'price': spy_price
             }
-    except:
+    except Exception as e:
+        st.error(f"SPY fetch error: {e}")
         pass
+    st.write("DEBUG: returning zeros for market_perf")
     return {'change_5d': 0, 'change_20d': 0, 'change_3mo': 0, 'price': 0}
 
 
