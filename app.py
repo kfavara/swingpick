@@ -1224,7 +1224,7 @@ def main():
                                 
                                 st.markdown("<br>", unsafe_allow_html=True)
                 except Exception as e:
-                    print(f"Error displaying {pos.get('symbol')}: {e}")
+                    st.error(f'EXCEPTION: {e}')
         else:
             st.info("No open positions in Alpaca")
     else:
