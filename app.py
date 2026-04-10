@@ -1214,6 +1214,8 @@ def main():
                                 </div>
                                 """, unsafe_allow_html=True)
                                 
+                                # Also show as native Streamlit components
+                                st.write(f"**TICKER:** {ticker} | **PRICE:** ${current_price:.2f} | **QTY:** {qty:.0f} | **PNL:** ${pnl:+.2f}")
                                 if take_profit:
                                     st.markdown(f"<div style='color:#3fb950;margin-top:5px;'>✅ {'<br>'.join(take_profit)}</div>", unsafe_allow_html=True)
                                 if stop_loss:
