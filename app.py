@@ -892,6 +892,9 @@ def scan_stocks(tickers):
     # Get market performance for relative strength comparison
     market_perf = get_market_performance()
     
+    # Debug: print market performance
+    print(f"[DEBUG] market_perf: {market_perf}")
+    
     for i, ticker in enumerate(tickers):
         try:
             # Fetch data
@@ -1232,7 +1235,9 @@ def main():
         try:
             with st.spinner("Scanning S&P 500 stocks..."):
                 tickers = get_sp500_tickers(250)
+                st.write(f"Scanning {len(tickers)} tickers...")  # Debug
                 results = scan_stocks(tickers)
+                st.write(f"Found {len(results)} results")  # Debug
                 st.session_state.results = results
                 st.session_state.last_scan = datetime.now()
         except Exception as scan_err:
