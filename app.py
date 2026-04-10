@@ -921,6 +921,7 @@ def scan_stocks(tickers):
 
 
 def main():
+    print("MAIN STARTED", file=sys.stderr)
     """Main app function."""
     
     # Header
@@ -950,7 +951,9 @@ def main():
         # Get open P&L from current positions
         alpaca_positions = get_alpaca_positions()
         if alpaca_positions:
+            print(f"FOUND {len(alpaca_positions)} positions", file=sys.stderr)
             for pos in alpaca_positions:
+                print(f"PROCESSING position: {pos.get('symbol')}", file=sys.stderr)
                 try:
                     ticker = pos.get('symbol', '')
                     avg_cost = float(pos.get('avg_entry_price', 0))
@@ -1133,7 +1136,9 @@ def main():
                 except:
                     pass
             
+            print(f"FOUND {len(alpaca_positions)} positions", file=sys.stderr)
             for pos in alpaca_positions:
+                print(f"PROCESSING position: {pos.get('symbol')}", file=sys.stderr)
                 try:
                     ticker = pos.get('symbol', '')
                     avg_cost = float(pos.get('avg_entry_price', 0))
@@ -1148,6 +1153,7 @@ def main():
                                 pass
                     qty = float(pos.get('qty', 0))
                     
+                    print(f"CONDITION TRUE for {ticker}, displaying...", file=sys.stderr)
                     if ticker and current_price and current_price > 0:
                         pnl = (current_price - avg_cost) * qty
                         pnl_pct = (current_price - avg_cost) / avg_cost * 100 if avg_cost else 0
