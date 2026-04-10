@@ -1165,7 +1165,9 @@ def main():
                         st.error(f'SKIP: condition failed')
                     else:
                         st.error('Condition PASSED')
+                    st.error('ABOUT TO CHECK ticker and current_price condition')
                     if ticker and current_price and current_price > 0:
+                        st.error('INSIDE BLOCK - condition was TRUE')
                         pnl = (current_price - avg_cost) * qty
                         pnl_pct = (current_price - avg_cost) / avg_cost * 100 if avg_cost else 0
                         pnl_color = "#3fb950" if pnl >= 0 else "#f85149"
