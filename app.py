@@ -1163,6 +1163,7 @@ def main():
                         
                         # Get sell signals
                         sell_signals = analyze_sell_signals(ticker, avg_cost)
+                        st.error(f'DEBUG: sell_signals={sell_signals is not None}, keys={list(sell_signals.keys()) if sell_signals else None}')
                         if sell_signals:
                             take_profit = sell_signals.get('take_profit_signals', [])
                             stop_loss = sell_signals.get('stop_loss_signals', [])
