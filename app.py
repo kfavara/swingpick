@@ -659,7 +659,7 @@ def score_stock(indicators, ticker, market_perf=None):
     vol_ratio = indicators.get('vol_ratio', 1)
     
     # Volume filter - Minervini requires strong volume
-    if volume < 500000:
+    if volume < 50000:
         return None, None
     
     # Market performance for relative strength
