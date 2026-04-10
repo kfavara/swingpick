@@ -892,8 +892,8 @@ def scan_stocks(tickers):
             # Fetch data
             df = get_stock_bars(ticker)
             
+            st.write(f"Checking {ticker}...")  # Debug - show each ticker
             if df is None or df.empty:
-                print(f"[DEBUG] {ticker}: no data")  # Debug
                 continue
             
             # Calculate indicators
