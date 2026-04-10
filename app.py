@@ -1161,6 +1161,10 @@ def main():
                     qty = float(pos.get('qty', 0))
                     
                     st.error(f'CHECK: ticker={ticker}, current_price={current_price}, avg_cost={avg_cost}, qty={qty}')
+                    if not (ticker and current_price and current_price > 0):
+                        st.error(f'SKIP: condition failed')
+                    else:
+                        st.error('Condition PASSED')
                     if ticker and current_price and current_price > 0:
                         pnl = (current_price - avg_cost) * qty
                         pnl_pct = (current_price - avg_cost) / avg_cost * 100 if avg_cost else 0
