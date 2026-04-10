@@ -1167,7 +1167,7 @@ def main():
                         c3.metric("Qty", f"{qty:.0f}")
                         c4.metric("P&L", f"${pnl:+.2f}", f"{pnl_pct:+.2f}%")
                         
-                        # Show signals if available
+                        # Show signal
                         if sell_signals:
                             rsi_val = sell_signals.get('rsi')
                             change_val = sell_signals.get('change_1d')
@@ -1181,8 +1181,10 @@ def main():
                                 st.success(f"✅ {'; '.join(take_profit)}")
                             elif stop_loss:
                                 st.error(f"🛑 {'; '.join(stop_loss)}")
-                            else:
-                                st.info("➡️ HOLD")
+                        
+                        # Always show HOLD if no signal
+                        if not sell_signals or (not take_profit and not stop_loss):
+                            st.info("➡️ HOLD")
                         
                         # Sell button
                         if st.button(f"🔴 Sell {ticker}", key=f"sell_{ticker}"):
