@@ -886,7 +886,7 @@ def scan_stocks(tickers):
     market_perf = get_market_performance()
     
     # Debug: print market performance
-    print(f"[DEBUG] market_perf: {market_perf}")
+    st.write(f"DEBUG market_perf: {market_perf}")
     
     for i, ticker in enumerate(tickers):
         try:
