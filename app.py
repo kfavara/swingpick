@@ -333,8 +333,10 @@ def get_stock_bars(symbol):
 
 def get_market_performance():
     """Get SPY performance for relative strength comparison."""
+    import traceback
     try:
         spy = get_yfinance_bars("SPY")
+        st.write(f"SPY data: {type(spy)}, len: {len(spy) if spy is not None else 'None'}")
         if spy is not None and len(spy) >= 20:
             spy_price = spy['Close'].iloc[-1]
             spy_5d_ago = spy['Close'].iloc[-6] if len(spy) >= 6 else spy_price
@@ -347,8 +349,11 @@ def get_market_performance():
                 'change_3mo': ((spy_price - spy_63d_ago) / spy_63d_ago) * 100,
                 'price': spy_price
             }
-    except:
-        pass
+        else:
+            st.write("SPY data insufficient length")
+    except Exception as e:
+        st.write(f"SPY error: {e}")
+        st.write(traceback.format_exc())
     return {'change_5d': 0, 'change_20d': 0, 'change_3mo': 0, 'price': 0}
 
 
