@@ -1110,14 +1110,18 @@ def main():
     
     # Run scan
     if scan_button:
-        with st.spinner("Scanning S&P 500 stocks..."):
+        try:
             tickers = get_sp500_tickers(250)
-            results = scan_stocks(tickers)
-            st.session_state.results = results
-            st.session_state.last_scan = datetime.now()
-        
-        if last_scan_date != today:
-            st.success(f"Found {len(results)} potential swing trades!")
+            if not tickers:
+                st.error("No tickers found")
+            else:
+                with st.spinner(f"Scanning {len(tickers)} stocks..."):
+                    results = scan_stocks(tickers)
+                st.session_state.results = results
+                st.session_state.last_scan = datetime.now()
+                st.success(f"Found {len(results)} potential swing trades!")
+        except Exception as e:
+            st.error(f"Scan failed: {str(e)}")
     
     # Display results as a simple table
     if st.session_state.results:
