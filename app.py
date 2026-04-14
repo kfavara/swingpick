@@ -936,8 +936,9 @@ def main():
     
     st.divider()
     
-    # ===== TOTAL P&L DISPLAY (REALIZED + OPEN) - ALPACA ONLY =====
-    # Always fetch directly from Alpaca
+    # ===== TOTAL P&L DISPLAY =====
+    st.subheader("Portfolio Summary")
+    
     realized_pnl = 0
     open_pnl = 0
     
@@ -956,13 +957,9 @@ def main():
                     avg_cost = float(pos.get('avg_entry_price', 0))
                     current_price = get_yfinance_price(ticker)
                     if not current_price:
-                        # Fallback to Alpaca's current_price
                         alpaca_price = pos.get('current_price')
                         if alpaca_price:
-                            try:
-                                current_price = float(alpaca_price)
-                            except:
-                                pass
+                            current_price = float(alpaca_price)
                     qty = float(pos.get('qty', 0))
                     if ticker and current_price and avg_cost:
                         pnl = (current_price - avg_cost) * qty
@@ -970,262 +967,133 @@ def main():
                 except:
                     pass
     
-    realized_pnl_color = "#3fb950" if realized_pnl >= 0 else "#f85149"
-    open_pnl_color = "#3fb950" if open_pnl >= 0 else "#f85149"
-    
-    # Combined total (realized + open)
+    # Combined total
     combined_pnl = realized_pnl + open_pnl
-    combined_color = "#3fb950" if combined_pnl >= 0 else "#f85149"
     
     col_r, col_o, col_c = st.columns(3)
     with col_r:
-        st.markdown(f"""
-        <div style="background-color:#161b22;padding:15px;border-radius:10px;margin-bottom:20px;text-align:center;">
-            <span style="font-size:0.9rem;color:#8b949e;">📊 Realized P&L (Closed Trades)</span><br>
-            <span style="font-size:1.3rem;font-weight:700;color:{realized_pnl_color};">${realized_pnl:+,.2f}</span>
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric("Realized P&L", f"${realized_pnl:+,.2f}")
     with col_o:
-        st.markdown(f"""
-        <div style="background-color:#161b22;padding:15px;border-radius:10px;margin-bottom:20px;text-align:center;">
-            <span style="font-size:0.9rem;color:#8b949e;">📈 Open P&L (Current Positions)</span><br>
-            <span style="font-size:1.3rem;font-weight:700;color:{open_pnl_color};">${open_pnl:+,.2f}</span>
-        </div>
-        """, unsafe_allow_html=True)
+        st.metric("Open P&L", f"${open_pnl:+,.2f}")
     with col_c:
-        st.markdown(f"""
-        <div style="background-color:#161b22;padding:15px;border-radius:10px;margin-bottom:20px;text-align:center;">
-            <span style="font-size:0.9rem;color:#8b949e;">💰 Combined Total</span><br>
-            <span style="font-size:1.5rem;font-weight:700;color:{combined_color};">${combined_pnl:+,.2f}</span>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # ===== PORTFOLIO TRACKING SECTION =====
-    st.markdown('<p class="section-header">💼 My Positions</p>', unsafe_allow_html=True)
-    
-    # Get Alpaca account info
-    account_info = get_alpaca_account()
-    if account_info:
-        try:
-            cash = float(account_info.get('cash', 0))
-            portfolio_value = float(account_info.get('portfolio_value', 0))
-            st.caption(f"💰 Cash: ${cash:,.2f} | Portfolio: ${portfolio_value:,.2f}")
-        except:
-            pass
-    
-    # Auto-sync from Alpaca on page load (if not already done)
-    if 'alpaca_synced' not in st.session_state:
-        st.session_state.alpaca_synced = False
-    
-    # Sync button to fetch positions from Alpaca
-    sync_button = st.button("🔄 Sync from Alpaca", key="sync_alpaca_btn")
-    
-    # Auto-sync on first load
-    if not st.session_state.alpaca_synced and ALPACA_API_KEY and ALPACA_SECRET_KEY:
-        sync_button = True
-        st.session_state.alpaca_synced = True
-    
-    if sync_button:
-        alpaca_positions = get_alpaca_positions()
-        if alpaca_positions and len(alpaca_positions) > 0:
-            # Clear and repopulate portfolio from Alpaca
-            st.session_state.portfolio = []
-            for pos in alpaca_positions:
-                try:
-                    # Get current price from Yahoo Finance (real-time during market hours)
-                    ticker = pos.get('symbol', '')
-                    current_price = get_yfinance_price(ticker)
-                    # Fallback to Alpaca price if Yahoo fails
-                    if not current_price:
-                        current_price = float(pos.get('current_price', 0))
-                    avg_cost = float(pos.get('avg_entry_price', 0))
-                    qty = float(pos.get('qty', 0))
-                    
-                    if ticker:
-                        st.session_state.portfolio.append({
-                            'ticker': ticker,
-                            'buy_price': avg_cost,
-                            'current_price': current_price,
-                            'qty': qty,
-                            'date': datetime.now().strftime('%Y-%m-%d'),
-                            'alpaca_position': True
-                        })
-                except:
-                    pass
-            if not st.session_state.alpaca_synced:  # Only show on auto-sync
-                st.success(f"Synced {len(st.session_state.portfolio)} positions from Alpaca")
-                st.session_state.alpaca_synced = True
-            st.rerun()
-        else:
-            st.info("No positions found in Alpaca account")
-    
-    # Show open orders
-    open_orders = get_alpaca_orders()
-    if open_orders and len(open_orders) > 0:
-        st.markdown("**📋 Open Orders (Waiting to Fill)**")
-        for order in open_orders:
-            with st.container():
-                side_color = "#3fb950" if order.get('side') == 'buy' else "#f85149"
-                st.markdown(f"""
-                <div class="pick-row" style="border-left: 4px solid {side_color};">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div>
-                            <span style="font-size:1.1rem;font-weight:700;color:#ffffff;">{order.get('symbol')}</span>
-                            <span style="color:{side_color};margin-left:10px;">{order.get('side').upper()}</span>
-                            <span style="color:#8b949e;margin-left:10px;">{order.get('qty')} shares</span>
-                        </div>
-                        <span style="color:#8b949e;">{order.get('type').upper()} - {order.get('time_in_force')}</span>
-                    </div>
-                    <div style="margin-top:5px;">
-                        <span style="color:#8b949e;">Limit: ${order.get('limit_price', 'Market')}</span>
-                        <span style="color:#8b949e;margin-left:15px;">Status: {order.get('status')}</span>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-        st.caption("Open orders will fill when market price hits your limit (or immediately for market orders)")
-    
-    # Initialize sold_history from Alpaca only
-    if 'sold_history' not in st.session_state:
-        # Fetch directly from Alpaca
-        alpaca_history = fetch_alpaca_history('2026-03-19')
-        if alpaca_history:
-            st.session_state.sold_history = alpaca_history
-        else:
-            st.session_state.sold_history = []
-    
-    # NOTE: sold_history now persists between page reloads
-    # To manually clear, use the "Clear History" button below
-    
-    
-    # Add new position form - Alpaca only
-    st.markdown("**🟢 Buy via Alpaca**")
-    col1, col2, col3 = st.columns([2, 2, 2])
-    with col1:
-        new_ticker = st.text_input("Ticker", placeholder="AAPL", key="buy_ticker").upper()
-    with col2:
-        qty = st.number_input("Quantity", min_value=1, step=1, value=1, key="buy_qty")
-    with col3:
-        use_market = st.checkbox("Market Order", value=True, key="buy_market")
-    
-    alpaca_buy_button = st.button("📈 Place Buy Order", type="primary", use_container_width=True)
-    
-    # Handle Alpaca buy
-    if alpaca_buy_button and new_ticker and qty:
-        order = place_alpaca_order(new_ticker, qty, 'buy', 'market' if use_market else 'limit')
-        if 'error' in order:
-            st.error(f"Order failed: {order['error']}")
-        else:
-            st.success(f"✅ Buy order placed: {qty} share(s) of {new_ticker}")
-            st.rerun()
+        st.metric("Combined Total", f"${combined_pnl:+,.2f}")
     
     # ===== MY POSITIONS (ALPACA ONLY) =====
     # Display positions from Alpaca directly
     if ALPACA_API_KEY and ALPACA_SECRET_KEY:
+        st.subheader("My Positions")
+        account_info = get_alpaca_account()
+        if account_info:
+            try:
+                cash = float(account_info.get('cash', 0))
+                portfolio_value = float(account_info.get('portfolio_value', 0))
+                st.caption(f"Cash: ${cash:,.2f} | Portfolio: ${portfolio_value:,.2f}")
+            except:
+                pass
+        
         alpaca_positions = get_alpaca_positions()
+        
         if alpaca_positions:
-            st.markdown('<p class="section-header">💼 My Positions</p>', unsafe_allow_html=True)
-            account_info = get_alpaca_account()
-            if account_info:
-                try:
-                    cash = float(account_info.get('cash', 0))
-                    portfolio_value = float(account_info.get('portfolio_value', 0))
-                    st.caption(f"💰 Cash: ${cash:,.2f} | Portfolio: ${portfolio_value:,.2f}")
-                except:
-                    pass
-            
+            # Build position table
+            pos_table = []
             for pos in alpaca_positions:
                 try:
                     ticker = pos.get('symbol', '')
                     avg_cost = float(pos.get('avg_entry_price', 0))
                     current_price = get_yfinance_price(ticker)
                     if not current_price:
-                        # Fallback to Alpaca's current_price
                         alpaca_price = pos.get('current_price')
                         if alpaca_price:
-                            try:
-                                current_price = float(alpaca_price)
-                            except:
-                                pass
+                            current_price = float(alpaca_price)
                     qty = float(pos.get('qty', 0))
                     
                     if ticker and current_price and current_price > 0:
                         pnl = (current_price - avg_cost) * qty
                         pnl_pct = (current_price - avg_cost) / avg_cost * 100 if avg_cost else 0
-                        pnl_color = "#3fb950" if pnl >= 0 else "#f85149"
                         
                         # Get sell signals
                         sell_signals = analyze_sell_signals(ticker, avg_cost)
+                        signal = "HOLD"
                         if sell_signals:
-                            take_profit = sell_signals.get('take_profit_signals', [])
-                            stop_loss = sell_signals.get('stop_loss_signals', [])
-                            
-                            if take_profit:
-                                signal_color = "#3fb950"
-                                signal_type = "✅ TAKE PROFIT"
-                            elif stop_loss:
-                                signal_color = "#f85149"
-                                signal_type = "🛑 STOP LOSS"
-                            else:
-                                signal_color = "#8b949e"
-                                signal_type = "➡️ HOLD"
-                            
-                            with st.container():
-                                st.markdown(f"""
-                                <div class="pick-row" style="border-left: 4px solid {pnl_color};">
-                                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                                        <div>
-                                            <span style="font-size:1.2rem;font-weight:700;color:#ffffff;">{ticker}</span>
-                                            <span style="color:#8b949e;margin-left:10px;">Avg: ${avg_cost:.2f}</span>
-                                            <span style="color:#8b949e;margin-left:10px;">Now: ${current_price:.2f}</span>
-                                            <span style="color:#8b949e;margin-left:10px;">Qty: {qty:.0f}</span>
-                                        </div>
-                                        <div style="text-align:right;">
-                                            <span style="font-size:1.1rem;font-weight:600;color:{pnl_color};">{pnl_pct:+.2f}% (${pnl:+,.2f})</span>
-                                        </div>
-                                    </div>
-                                    <div style="margin-top:8px;display:flex;gap:20px;flex-wrap:wrap;">
-                                        <div><span style="color:#8b949e;">Signal:</span> <span style="color:{signal_color};font-weight:600;">{signal_type}</span></div>
-                                        <div><span style="color:#8b949e;">RSI:</span> <span style="color:#ffffff;">{sell_signals.get('rsi', 'N/A'):.1f}</span></div>
-                                        <div><span style="color:#8b949e;">Today:</span> <span style="color:#ffffff;">{sell_signals.get('change_1d', 0):+.2f}%</span></div>
-                                    </div>
-                                </div>
-                                """, unsafe_allow_html=True)
-                                
-                                if take_profit:
-                                    st.markdown(f"<div style='color:#3fb950;margin-top:5px;'>✅ {'<br>'.join(take_profit)}</div>", unsafe_allow_html=True)
-                                if stop_loss:
-                                    st.markdown(f"<div style='color:#f85149;margin-top:5px;'>🛑 {'<br>'.join(stop_loss)}</div>", unsafe_allow_html=True)
-                                if not take_profit and not stop_loss:
-                                    st.caption("No strong signals - consider holding")
-                                
-                                # Sell via Alpaca only
-                                if st.button(f"🔴 Sell {ticker}", key=f"sell_alpaca_{ticker}"):
+                            if sell_signals.get('take_profit_signals'):
+                                signal = "TAKE PROFIT"
+                            elif sell_signals.get('stop_loss_signals'):
+                                signal = "STOP LOSS"
+                        
+                        pos_table.append({
+                            'Ticker': ticker,
+                            'Avg Cost': f"${avg_cost:.2f}",
+                            'Current': f"${current_price:.2f}",
+                            'Qty': int(qty),
+                            'P&L': f"${pnl:+,.2f}",
+                            'P&L %': f"{pnl_pct:+.2f}%",
+                            'Signal': signal,
+                            'RSI': f"{sell_signals.get('rsi', 0):.1f}" if sell_signals else "N/A",
+                            'Today': f"{sell_signals.get('change_1d', 0):+.2f}%" if sell_signals else "N/A"
+                        })
+                except Exception as e:
+                    pass
+            
+            if pos_table:
+                st.table(pos_table)
+                
+                # Sell buttons for each position
+                st.caption("Sell positions:")
+                cols = st.columns(4)
+                for i, pos in enumerate(alpaca_positions):
+                    try:
+                        ticker = pos.get('symbol', '')
+                        qty = float(pos.get('qty', 0))
+                        if ticker:
+                            col = cols[i % 4]
+                            with col:
+                                if st.button(f"Sell {ticker}", key=f"sell_btn_{ticker}"):
                                     order = place_alpaca_order(ticker, int(qty), 'sell', 'market')
                                     if 'error' in order:
                                         st.error(f"Order failed: {order['error']}")
                                     else:
-                                        st.success(f"✅ Sell order placed: {int(qty)} share(s) of {ticker}")
+                                        st.success(f"Sold {int(qty)} shares of {ticker}")
                                         st.rerun()
-                                
-                                st.markdown("<br>", unsafe_allow_html=True)
-                except Exception as e:
-                    print(f"Error displaying {pos.get('symbol')}: {e}")
+                    except:
+                        pass
         else:
             st.info("No open positions in Alpaca")
-        
-        # Force fresh display - if we got here, show something
-        if alpaca_positions:
-            st.success(f"✅ Displayed {len(alpaca_positions)} positions above")
     else:
         st.warning("Alpaca not configured")
     
     
+    # ===== RECENT TRADES (LAST 5 DAYS) =====
+    st.subheader("Recent Trades (Last 5 Days)")
+    
+    # Get trade history from Alpaca
+    five_days_ago = (datetime.now() - timedelta(days=5)).strftime('%Y-%m-%d')
+    recent_trades = fetch_alpaca_history(five_days_ago)
+    
+    if recent_trades and len(recent_trades) > 0:
+        # Build trade table
+        trade_table = []
+        for trade in recent_trades:
+            trade_table.append({
+                'Ticker': trade.get('ticker', ''),
+                'Buy Price': f"${trade.get('buy_price', 0):.2f}",
+                'Sell Price': f"${trade.get('sell_price', 0):.2f}",
+                'Qty': trade.get('qty', 0),
+                'Buy Date': trade.get('buy_date', ''),
+                'Sell Date': trade.get('sell_date', ''),
+                'P&L': f"${trade.get('pnl_dollars', 0):+,.2f}",
+                'P&L %': f"{trade.get('pnl_pct', 0):+.2f}%"
+            })
+        
+        st.table(trade_table)
+        st.caption(f"Showing {len(trade_table)} trades from the last 5 days")
+    else:
+        st.info("No trades in the last 5 days")
+    
+    
     # ===== MARKET SCAN SECTION =====
-    col1, col2, col3 = st.columns([2, 2, 1])
-    with col1:
-        scan_button = st.button("🔄 Scan Market", type="primary", use_container_width=True)
-    with col2:
-        num_picks = st.slider("Number of picks to show", 5, 20, 10)
+    st.subheader("Today's Top Picks")
+    scan_button = st.button("Scan Market")
+    num_picks = st.slider("Number of picks", 5, 20, 10)
     
     # Initialize session state
     if 'results' not in st.session_state:
@@ -1238,82 +1106,51 @@ def main():
     last_scan_date = st.session_state.last_scan.date() if st.session_state.last_scan else None
     
     if last_scan_date != today and not st.session_state.results:
-        # Auto-run scan on page load
         scan_button = True
     
     # Run scan
     if scan_button:
-        st.write("DEBUG: Starting scan...")
-        tickers = get_sp500_tickers(250)
-        st.write(f"DEBUG: Got {len(tickers)} tickers")
-        results = scan_stocks(tickers)
-        st.write(f"DEBUG: Got {len(results)} results")
-        st.session_state.results = results
-        st.session_state.last_scan = datetime.now()
+        with st.spinner("Scanning S&P 500 stocks..."):
+            tickers = get_sp500_tickers(250)
+            results = scan_stocks(tickers)
+            st.session_state.results = results
+            st.session_state.last_scan = datetime.now()
         
-        if last_scan_date != today:  # Only show success if auto-scanned
+        if last_scan_date != today:
             st.success(f"Found {len(results)} potential swing trades!")
     
-    # Display results
+    # Display results as a simple table
     if st.session_state.results:
         results = st.session_state.results[:num_picks]
         
-        # Summary metrics
-        st.markdown('<p class="section-header">📊 Today\'s Top Picks</p>', unsafe_allow_html=True)
-        
+        # Build a simple table
+        table_data = []
         for i, pick in enumerate(results, 1):
-            # Color coding based on score
-            score_color = "#3fb950" if pick['score'] >= 70 else "#58a6ff" if pick['score'] >= 60 else "#8b949e"
-            signal_class = "signal-bull" if pick['change_1d'] > 0 else "signal-bear"
-            
-            # Minervini-specific metrics
             pct_from_high = pick.get('pct_from_52wk_high', 0)
             rs_3mo = pick.get('rs_3mo', 0)
-            
-            with st.container():
-                st.markdown(f"""
-                <div class="pick-row">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div>
-                            <span style="font-size:1.4rem;font-weight:700;color:#ffffff;">{i}. {pick['ticker']}</span>
-                            <span style="color:#8b949e;margin-left:10px;">${pick['price']:.2f}</span>
-                            <span class="{signal_class}">
-                                {pick['change_1d']:+.2f}% today
-                            </span>
-                        </div>
-                        <div style="text-align:right;">
-                            <span style="font-size:1.2rem;font-weight:600;color:{score_color};">Score: {pick['score']}</span>
-                        </div>
-                    </div>
-                    <div style="margin-top:10px;display:flex;gap:20px;flex-wrap:wrap;">
-                        <div><span style="color:#8b949e;">Stop:</span> <span style="color:#f85149;">${pick['stop_loss']:.2f}</span></div>
-                        <div><span style="color:#8b949e;">Target:</span> <span style="color:#3fb950;">${pick['target']:.2f}</span></div>
-                        <div><span style="color:#8b949e;">Risk:Reward:</span> <span style="color:#ffffff;">1:{(pick['target']-pick['price'])/(pick['price']-pick['stop_loss']):.1f}</span></div>
-                        <div><span style="color:#8b949e;">52W High:</span> <span style="color:#ffffff;">{pct_from_high:.1f}%</span></div>
-                        <div><span style="color:#8b949e;">RS vs Mkt:</span> <span style="color:#{'#3fb950' if rs_3mo > 0 else '#f85149'};">{rs_3mo:+.1f}%</span></div>
-                        <div><span style="color:#8b949e;">RSI:</span> <span style="color:#ffffff;">{pick.get('rsi', 'N/A')}</span></div>\n                    </div>
-                    <div style="margin-top:8px;">
-                        <span style="color:#8b949e;">Why: </span>
-                        <span style="color:#58a6ff;">{", ".join(pick['reasons'][:4])}</span>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                st.markdown("<br>", unsafe_allow_html=True)
+            risk_reward = (pick['target']-pick['price'])/(pick['price']-pick['stop_loss'])
+            table_data.append({
+                '#': i,
+                'Ticker': pick['ticker'],
+                'Price': f"${pick['price']:.2f}",
+                'Today': f"{pick['change_1d']:+.2f}%",
+                'Score': pick['score'],
+                'Stop': f"${pick['stop_loss']:.2f}",
+                'Target': f"${pick['target']:.2f}",
+                'R:R': f"1:{risk_reward:.1f}",
+                '52W High': f"{pct_from_high:.1f}%",
+                'RS vs Mkt': f"{rs_3mo:+.1f}%",
+                'RSI': f"{pick.get('rsi', 0):.1f}",
+                'Why': ", ".join(pick['reasons'][:3])
+            })
+        
+        st.table(table_data)
     
     elif st.session_state.last_scan is None:
-        st.info("👆 Click 'Scan Market' to analyze S&P 500 stocks and find swing trade opportunities.")
+        st.info("Click 'Scan Market' to analyze S&P 500 stocks")
     
     # Disclaimer
-    st.markdown("""
-    <div class="disclaimer">
-        <strong>⚠️ Disclaimer:</strong> This tool is for educational and informational purposes only. 
-        It is not financial advice, trading advice, or any other form of professional advice. 
-        Past performance does not guarantee future results. 
-        Always do your own research before making any investment decisions. 
-        Trade at your own risk.
-    </div>
-    """, unsafe_allow_html=True)
+    st.caption("Disclaimer: This tool is for educational purposes only. Not financial advice.")
 
 
 if __name__ == "__main__":
