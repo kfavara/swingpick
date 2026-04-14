@@ -519,14 +519,16 @@ def get_sp500_tickers(limit=250):
         import requests
         url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
         headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'}
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code != 200:
+            raise Exception(f"HTTP {response.status_code}")
         from io import StringIO
         df = pd.read_html(StringIO(response.text))[0]
         # Sort by market cap (GICS Sector column shows sector, so use the order from Wikipedia which is roughly by market cap)
         tickers = df['Symbol'].str.replace('.', '-', regex=False).tolist()
         return tickers[:limit]  # Return only top N
     except Exception as e:
-        st.error(f"Error fetching S&P 500 list: {e}")
+        print(f"Error fetching S&P 500 list: {e}")
         # Fallback to common tickers
         return ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'BRK-B', 'JPM', 'JNJ', 'V', 'UNH', 'HD', 'PG', 'MA', 'NVDA', 'DIS', 'PYPL', 'ADBE', 'NFLX', 'INTC', 'CRM', 'AMD', 'QCOM', 'TXN', 'AVGO', 'ORCL', 'IBM', 'CSCO', 'UBER', 'ABNB', 'COIN', 'SNOW', 'PLTR', 'SQ', 'SHOP', 'MELI', 'SEA', 'TOST', 'RIVN', 'LCID', 'NIO', 'XPEV', 'LI', 'BABA', 'JD', 'PDD', 'NTES', 'BIDU']
 
@@ -891,6 +893,7 @@ def scan_stocks(tickers):
     
     # Get market performance for relative strength comparison
     market_perf = get_market_performance()
+    print(f"Market performance: {market_perf}")
     
     for i, ticker in enumerate(tickers):
         try:
@@ -898,23 +901,30 @@ def scan_stocks(tickers):
             df = get_stock_bars(ticker)
             
             if df is None or df.empty:
+                print(f"{ticker}: No data")
                 continue
             
             # Calculate indicators
             indicators = calculate_indicators(df)
+            
+            if not indicators:
+                print(f"{ticker}: No indicators")
+                continue
             
             # Score the stock with market performance
             score, pick = score_stock(indicators, ticker, market_perf)
             
             if pick:
                 results.append(pick)
-            
-            # Update progress
-            # Note: Progress tracking done in caller
+                print(f"{ticker}: SCORE {score}")
+            # else:
+            #     print(f"{ticker}: Failed score check")
             
         except Exception as e:
+            print(f"{ticker}: Error - {e}")
             continue  # Skip problematic tickers
     
+    print(f"Total results: {len(results)}")
     # Sort by score descending
     results.sort(key=lambda x: x['score'], reverse=True)
     return results[:15]  # Return top 15
