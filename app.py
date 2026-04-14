@@ -1089,6 +1089,27 @@ def main():
         st.warning("Alpaca not configured")
     
     
+    # ===== BUY POSITION FORM =====
+    st.subheader("Buy Stock")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        new_ticker = st.text_input("Ticker", placeholder="AAPL", key="buy_ticker_input")
+    with col2:
+        buy_qty = st.number_input("Quantity", min_value=1, step=1, value=1, key="buy_qty_input")
+    with col3:
+        market_order = st.checkbox("Market Order", value=True, key="buy_market_input")
+    
+    if st.button("Place Buy Order", key="buy_btn"):
+        if new_ticker and buy_qty:
+            order = place_alpaca_order(new_ticker, buy_qty, 'buy', 'market' if market_order else 'limit')
+            if 'error' in order:
+                st.error(f"Order failed: {order['error']}")
+            else:
+                st.success(f"Bought {buy_qty} shares of {new_ticker}")
+                st.rerun()
+        else:
+            st.warning("Enter ticker and quantity")
+    
     # ===== RECENT TRADES (LAST 5 DAYS) =====
     st.subheader("Recent Trades (Last 5 Days)")
     
