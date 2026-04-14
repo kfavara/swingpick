@@ -333,10 +333,8 @@ def get_stock_bars(symbol):
 
 def get_market_performance():
     """Get SPY performance for relative strength comparison."""
-    import traceback
     try:
         spy = get_yfinance_bars("SPY")
-        st.write(f"SPY data: {type(spy)}, len: {len(spy) if spy is not None else 'None'}")
         if spy is not None and len(spy) >= 20:
             spy_price = spy['Close'].iloc[-1]
             spy_5d_ago = spy['Close'].iloc[-6] if len(spy) >= 6 else spy_price
@@ -349,11 +347,8 @@ def get_market_performance():
                 'change_3mo': ((spy_price - spy_63d_ago) / spy_63d_ago) * 100,
                 'price': spy_price
             }
-        else:
-            st.write("SPY data insufficient length")
-    except Exception as e:
-        st.write(f"SPY error: {e}")
-        st.write(traceback.format_exc())
+    except:
+        pass
     return {'change_5d': 0, 'change_20d': 0, 'change_3mo': 0, 'price': 0}
 
 
@@ -898,12 +893,6 @@ def scan_stocks(tickers):
     
     # Get market performance for relative strength comparison
     market_perf = get_market_performance()
-    st.write(f"Market performance: {market_perf}")
-    
-    passed = 0
-    failed_volume = 0
-    failed_price = 0
-    failed_indicators = 0
     
     for i, ticker in enumerate(tickers):
         try:
@@ -911,24 +900,20 @@ def scan_stocks(tickers):
             df = get_stock_bars(ticker)
             
             if df is None or df.empty:
-                failed_indicators += 1
                 continue
             
             # Calculate indicators
             indicators = calculate_indicators(df)
             
             if not indicators:
-                failed_indicators += 1
                 continue
             
             # Volume filter check
             if indicators.get('volume', 0) < 500000:
-                failed_volume += 1
                 continue
             
             # Price filter check
             if indicators.get('price', 0) < 5:
-                failed_price += 1
                 continue
             
             # Score the stock with market performance
@@ -936,12 +921,10 @@ def scan_stocks(tickers):
             
             if pick:
                 results.append(pick)
-                passed += 1
             
         except Exception as e:
             continue
     
-    st.write(f"Scan summary: {passed} passed, {failed_volume} failed (volume), {failed_price} failed (price), {failed_indicators} failed (indicators)")
     # Sort by score descending
     results.sort(key=lambda x: x['score'], reverse=True)
     return results[:15]  # Return top 15
@@ -1160,13 +1143,11 @@ def main():
     if scan_button:
         try:
             tickers = get_sp500_tickers(250)
-            st.write(f"Got {len(tickers)} tickers: {tickers[:10]}...")
             
             if not tickers:
                 st.error("No tickers found")
             else:
                 results = scan_stocks(tickers)
-                st.write(f"Scan complete. Results: {len(results)}")
                 st.session_state.results = results
                 st.session_state.last_scan = datetime.now()
                 st.success(f"Found {len(results)} potential swing trades!")
