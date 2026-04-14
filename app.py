@@ -1111,23 +1111,25 @@ def main():
     # Run scan
     if scan_button:
         try:
-            st.write("Getting ticker list...")
             tickers = get_sp500_tickers(250)
-            st.write(f"Got {len(tickers)} tickers")
+            st.write(f"Got {len(tickers)} tickers, first 5: {tickers[:5]}")
             
             if not tickers:
                 st.error("No tickers found")
             else:
-                st.write("Scanning stocks...")
                 results = scan_stocks(tickers)
                 st.write(f"Scan complete. Found {len(results)} results")
+                if len(results) == 0:
+                    st.warning("No stocks passed the filter. Trying smaller set...")
+                    # Try with a small fallback set
+                    fallback = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'JPM', 'JNJ', 'V', 'UNH', 'HD', 'PG', 'MA', 'DIS', 'PYPL', 'ADBE']
+                    results = scan_stocks(fallback)
+                    st.write(f"Fallback scan: {len(results)} results")
                 st.session_state.results = results
                 st.session_state.last_scan = datetime.now()
                 st.success(f"Found {len(results)} potential swing trades!")
         except Exception as e:
             st.error(f"Scan failed: {str(e)}")
-            import traceback
-            st.write(traceback.format_exc())
     
     # Display results as a simple table
     if st.session_state.results:
