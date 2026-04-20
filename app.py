@@ -514,21 +514,18 @@ st.markdown("""
 
 
 def get_sp500_tickers(limit=250):
-    """Get S&P 500 tickers from Wikipedia (top N by market cap)."""
+    """Get S&P 500 tickers from SPY ETF holdings via yfinance."""
+    import yfinance as yf
     try:
-        import requests
-        url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
-        headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'}
-        response = requests.get(url, headers=headers, timeout=10)
-        if response.status_code != 200:
-            raise Exception(f"HTTP {response.status_code}")
-        from io import StringIO
-        df = pd.read_html(StringIO(response.text))[0]
-        # Sort by market cap (GICS Sector column shows sector, so use the order from Wikipedia which is roughly by market cap)
-        tickers = df['Symbol'].str.replace('.', '-', regex=False).tolist()
-        return tickers[:limit]  # Return only top N
+        spy = yf.Ticker("SPY")
+        holdings = spy.holders
+        if holdings is not None and not holdings.empty:
+            # holdings has 'Symbol' column
+            tickers = holdings['Symbol'].str.replace('.', '-', regex=False).tolist()
+            return tickers[:limit]
+        raise Exception("No holdings data")
     except Exception as e:
-        print(f"Error fetching S&P 500 list: {e}")
+        print(f"Error fetching SPY holdings: {e}")
         # Fallback to common tickers
         return ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'BRK-B', 'JPM', 'JNJ', 'V', 'UNH', 'HD', 'PG', 'MA', 'NVDA', 'DIS', 'PYPL', 'ADBE', 'NFLX', 'INTC', 'CRM', 'AMD', 'QCOM', 'TXN', 'AVGO', 'ORCL', 'IBM', 'CSCO', 'UBER', 'ABNB', 'COIN', 'SNOW', 'PLTR', 'SQ', 'SHOP', 'MELI', 'SEA', 'TOST', 'RIVN', 'LCID', 'NIO', 'XPEV', 'LI', 'BABA', 'JD', 'PDD', 'NTES', 'BIDU']
 
