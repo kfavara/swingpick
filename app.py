@@ -915,7 +915,7 @@ def scan_stocks(tickers):
             
             # RSI filter - exclude overbought stocks
             rsi = indicators.get('rsi', 0)
-            if rsi > 80:
+            if rsi > 85:
                 continue
             
             # Score the stock with market performance
