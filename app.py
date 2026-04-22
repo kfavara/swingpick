@@ -913,6 +913,11 @@ def scan_stocks(tickers):
             if indicators.get('price', 0) < 5:
                 continue
             
+            # RSI filter - exclude overbought stocks
+            rsi = indicators.get('rsi', 0)
+            if rsi > 75:
+                continue
+            
             # Score the stock with market performance
             score, pick = score_stock(indicators, ticker, market_perf)
             
