@@ -1235,6 +1235,10 @@ with tab2:
                 if change_5d < 3:  # Require 3% move in last 5 days
                     continue
                 
+                # Calculate RSI
+                close_prices = df['Close']
+                rsi_value = calculate_rsi(close_prices, 14).iloc[-1]
+                
                 # Score based on: momentum + volume + relative strength
                 score = (change_5d * 10) + (change_1mo * 3) + (vol_ratio * 5)
                 
@@ -1246,6 +1250,7 @@ with tab2:
                     'change_1mo': change_1mo,
                     'volume_ratio': vol_ratio,
                     'pct_from_52wk_high': pct_from_high,
+                    'rsi': rsi_value,
                     'score': score,
                     'reasons': [
                         f"+{change_5d:.1f}% this week",
@@ -1289,6 +1294,7 @@ with tab2:
                 'This Month': f"{m['change_1mo']:+.2f}%",
                 'Vol Ratio': f"{m['volume_ratio']:.1f}x",
                 '52W High': f"{m['pct_from_52wk_high']:.1f}%",
+                'RSI': f"{m.get('rsi', 50):.1f}",
                 'Score': int(m['score']),
                 'Why': ", ".join(m['reasons'][:2])
             })
