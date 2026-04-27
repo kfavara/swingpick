@@ -442,6 +442,9 @@ if APP_PASSWORD:  # Only require auth if password is set
 else:
     st.session_state.authenticated = True
 
+# Create tabs for different scan modes
+tab1, tab2, tab3 = st.tabs(["📈 Today's Picks", "🚀 Movers", "📋 Trade History"])
+
 # Auto-refresh every 15 minutes (900 seconds)
 st.markdown('<meta http-equiv="refresh" content="900">', unsafe_allow_html=True)
 
@@ -460,7 +463,7 @@ st.markdown("""
         color: #ffffff;
     }
     .subtitle {
-        color: #8b949e;
+        color: #c9d1d9;
         font-size: 1rem;
     }
     .metric-card {
@@ -493,7 +496,7 @@ st.markdown("""
         padding: 15px;
         margin-top: 30px;
         font-size: 0.85rem;
-        color: #8b949e;
+        color: #c9d1d9;
     }
     .section-header {
         color: #ffffff;
@@ -1095,6 +1098,8 @@ def main():
         else:
             st.warning("Enter ticker and quantity")
     
+    # ===== TAB 3: TRADE HISTORY =====
+with tab3:
     # ===== RECENT TRADES (LAST 5 DAYS) =====
     st.subheader("Recent Trades (Last 5 Days)")
     
@@ -1124,8 +1129,9 @@ def main():
     
     
     # ===== MARKET SCAN SECTION =====
+    # ===== TAB 1: TODAY'S PICKS =====
+with tab1:
     st.subheader("Today's Top Picks")
-    scan_button = st.button("Scan Market")
     num_picks = st.slider("Number of picks", 5, 20, 10)
     
     # Initialize session state
@@ -1188,6 +1194,116 @@ def main():
     
     # Disclaimer
     st.caption("Disclaimer: This tool is for educational purposes only. Not financial advice.")
+
+
+# ===== TAB 2: MOVERS =====
+with tab2:
+    st.subheader("🚀 Today's Movers")
+    st.markdown("Stocks with strong momentum, breaking out or hitting new highs")
+    
+    movers_button = st.button("Scan Movers")
+    num_movers = st.slider("Number of movers", 5, 20, 10, key="movers_slider")
+    
+    if 'movers_results' not in st.session_state:
+        st.session_state.movers_results = []
+    if 'movers_scan' not in st.session_state:
+        st.session_state.movers_scan = None
+    
+    # Function to scan for movers
+    def scan_movers(tickers, limit=20):
+        """Scan for stocks with strong momentum/volume."""
+        movers = []
+        
+        for ticker in tickers:
+            try:
+                df = get_yfinance_bars(ticker, period="2mo")
+                if df is None or len(df) < 30:
+                    continue
+                
+                # Recent price data
+                current = df['Close'].iloc[-1]
+                change_1d = ((current - df['Close'].iloc[-2]) / df['Close'].iloc[-2]) * 100
+                change_5d = ((current - df['Close'].iloc[-6]) / df['Close'].iloc[-6]) * 100 if len(df) >= 6 else 0
+                change_1mo = ((current - df['Close'].iloc[-21]) / df['Close'].iloc[-21]) * 100 if len(df) >= 21 else change_5d
+                
+                # Volume spike (today vs avg)
+                vol_avg = df['Volume'].iloc[-20:].mean()
+                vol_today = df['Volume'].iloc[-1]
+                vol_ratio = vol_today / vol_avg if vol_avg > 0 else 1
+                
+                # Distance from 52-week high
+                high_52wk = df['High'].rolling(252).max().iloc[-1]
+                pct_from_high = ((current - high_52wk) / high_52wk) * 100
+                
+                # Make sure it's actually moving UP, not down (filter for bullish movers)
+                if change_5d < 3:  # Require 3% move in last 5 days
+                    continue
+                
+                # Score based on: momentum + volume + relative strength
+                score = (change_5d * 10) + (change_1mo * 3) + (vol_ratio * 5)
+                
+                movers.append({
+                    'ticker': ticker,
+                    'price': current,
+                    'change_1d': change_1d,
+                    'change_5d': change_5d,
+                    'change_1mo': change_1mo,
+                    'volume_ratio': vol_ratio,
+                    'pct_from_52wk_high': pct_from_high,
+                    'score': score,
+                    'reasons': [
+                        f"+{change_5d:.1f}% this week",
+                        f"Vol {vol_ratio:.1f}x avg"
+                    ]
+                })
+                
+            except Exception as e:
+                continue
+        
+        # Sort by score and return top results
+        movers.sort(key=lambda x: x['score'], reverse=True)
+        return movers[:limit]
+    
+    if movers_button:
+        try:
+            tickers = get_sp500_tickers(250)
+            # Add some growth/tech tickers too
+            growth_tickers = ['QQQ', 'TQQQ', 'ARKK', 'IWM', 'DIA', 'XLK', 'XLF', 'XLE', 'XLV', 'XLY']
+            all_tickers = list(set(tickers + growth_tickers))
+            
+            movers_results = scan_movers(all_tickers, num_movers)
+            st.session_state.movers_results = movers_results
+            st.session_state.movers_scan = datetime.now()
+            st.success(f"Found {len(movers_results)} movers!")
+        except Exception as e:
+            st.error(f"Scan failed: {str(e)}")
+    
+    if st.session_state.movers_results:
+        movers = st.session_state.movers_results[:num_movers]
+        
+        # Build table
+        movers_table = []
+        for i, m in enumerate(movers, 1):
+            movers_table.append({
+                '#': i,
+                'Ticker': m['ticker'],
+                'Price': f"${m['price']:.2f}",
+                'Today': f"{m['change_1d']:+.2f}%",
+                'This Week': f"{m['change_5d']:+.2f}%",
+                'This Month': f"{m['change_1mo']:+.2f}%",
+                'Vol Ratio': f"{m['volume_ratio']:.1f}x",
+                '52W High': f"{m['pct_from_52wk_high']:.1f}%",
+                'Score': int(m['score']),
+                'Why': ", ".join(m['reasons'][:2])
+            })
+        
+        st.table(movers_table)
+    
+    elif st.session_state.movers_scan is None:
+        st.info("Click 'Scan Movers' to find stocks with strong momentum")
+    
+    # Disclaimer for movers
+    st.caption("Movers are for short-term trading. Higher risk.")
 
 
 if __name__ == "__main__":
