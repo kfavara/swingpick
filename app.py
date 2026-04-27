@@ -1132,7 +1132,7 @@ with tab3:
     # ===== TAB 1: TODAY'S PICKS =====
 with tab1:
     st.subheader("Today's Top Picks")
-    num_picks = st.slider("Number of picks", 5, 20, 10)
+    num_picks = st.slider("Number of picks", 5, 20, 10, key="picks_slider")
     
     # Initialize session state
     if 'results' not in st.session_state:
