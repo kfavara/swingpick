@@ -1140,16 +1140,11 @@ with tab1:
     if 'last_scan' not in st.session_state:
         st.session_state.last_scan = None
     
-    # Auto-scan if not done today
-    today = datetime.now().date()
-    last_scan_date = st.session_state.last_scan.date() if st.session_state.last_scan else None
-    
-    if last_scan_date != today and not st.session_state.results:
-        # Auto-trigger scan
-        pass  # Comment: auto-scan disabled for tab
+    scan_button = st.button("Scan Market")
+    num_picks = st.slider("Number of picks", 5, 20, 10)
     
     # Run scan
-    if scan_button and scan_button is not None:
+    if scan_button:
         try:
             tickers = get_sp500_tickers(250)
             
