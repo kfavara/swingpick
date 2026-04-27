@@ -1145,10 +1145,11 @@ with tab1:
     last_scan_date = st.session_state.last_scan.date() if st.session_state.last_scan else None
     
     if last_scan_date != today and not st.session_state.results:
-        scan_button = True
+        # Auto-trigger scan
+        pass  # Comment: auto-scan disabled for tab
     
     # Run scan
-    if scan_button:
+    if scan_button and scan_button is not None:
         try:
             tickers = get_sp500_tickers(250)
             
