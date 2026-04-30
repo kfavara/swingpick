@@ -1242,6 +1242,9 @@ with tab2:
                 # Score based on: momentum + volume + relative strength
                 score = (change_5d * 10) + (change_1mo * 3) + (vol_ratio * 5)
                 
+                # Target: 25% profit target
+                target = current * 1.25
+                
                 movers.append({
                     'ticker': ticker,
                     'price': current,
@@ -1252,6 +1255,7 @@ with tab2:
                     'pct_from_52wk_high': pct_from_high,
                     'rsi': rsi_value,
                     'score': score,
+                    'target': target,
                     'reasons': [
                         f"+{change_5d:.1f}% this week",
                         f"Vol {vol_ratio:.1f}x avg"
@@ -1296,6 +1300,7 @@ with tab2:
                 '52W High': f"{m['pct_from_52wk_high']:.1f}%",
                 'RSI': f"{m.get('rsi', 50):.1f}",
                 'Score': int(m['score']),
+                'Target': f"${m.get('target', m['price']*1.25):.2f}",
                 'Why': ", ".join(m['reasons'][:2])
             })
         
