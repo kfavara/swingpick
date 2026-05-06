@@ -1318,6 +1318,25 @@ with tab2:
             })
         
         st.table(movers_table)
+        
+        # Buy buttons for movers
+        if ALPACA_API_KEY and ALPACA_SECRET_KEY:
+            st.caption("Buy movers:")
+            cols = st.columns(4)
+            for i, m in enumerate(movers):
+                ticker = m['ticker']
+                col = cols[i % 4]
+                with col:
+                    if st.button(f"Buy {ticker}", key=f"buy_mover_{ticker}"):
+                        try:
+                            order = place_alpaca_order(ticker, 1, 'buy', 'market')
+                            if 'error' in order:
+                                st.error(f"Order failed: {order['error']}")
+                            else:
+                                st.success(f"Bought 1 share of {ticker}")
+                                st.rerun()
+                        except Exception as e:
+                            st.error(f"Order failed: {e}")
     
     elif st.session_state.movers_scan is None:
         st.info("Click 'Scan Movers' to find stocks with strong momentum")
