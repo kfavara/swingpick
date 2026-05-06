@@ -1168,8 +1168,21 @@ with tab1:
             pct_from_high = pick.get('pct_from_52wk_high', 0)
             rs_3mo = pick.get('rs_3mo', 0)
             risk_reward = (pick['target']-pick['price'])/(pick['price']-pick['stop_loss'])
+            
+            # Signal: suggest which to buy based on score
+            score = pick['score']
+            if score >= 45:
+                signal = "🔥🔥 BUY"
+            elif score >= 35:
+                signal = "🔥 BUY"
+            elif score >= 30:
+                signal = "✅"
+            else:
+                signal = ""
+            
             table_data.append({
                 '#': i,
+                'Signal': signal,
                 'Ticker': pick['ticker'],
                 'Price': f"${pick['price']:.2f}",
                 'Today': f"{pick['change_1d']:+.2f}%",
